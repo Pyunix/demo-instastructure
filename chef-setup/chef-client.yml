@@ -1,0 +1,31 @@
+---
+
+- hosts: all
+  tasks:
+  - name: Create chef dir
+    become: true
+    file:
+      path: /etc/chef
+      state: directory
+      mode: 0755
+
+  - name: Install apt-transport https
+    become: true
+    apt:
+      name: apt-transport-https
+      state: latest
+      update_cache: true
+
+  - name: Update repo cache
+    become: true
+    apt:
+      upgrade: yes
+      update_cache: yes
+
+  - name: Install Chef-client
+    apt:
+      deb: https://packages.chef.io/files/stable/chef/14.11.21/ubuntu/16.04/chef_14.11.21-1_amd64.deb
+
+  - name: Run Chef-client
+    become: true
+    command: chef-client

@@ -1,0 +1,51 @@
+---
+
+- hosts: all
+  become: true
+  tasks:
+  - name: Create dir for pem
+    become: true
+    file:
+      path: /pems
+      state: directory
+      mode: 0755
+
+  - name: Install ntp packages
+    become: true
+    apt: 
+      name: ntp
+      state: latest
+      update_cache: yes
+
+  - name: Install chef-standalone
+    apt:
+      deb: https://packages.chef.io/files/stable/chef-server/12.19.31/ubuntu/18.04/chef-server-core_12.19.31-1_amd64.deb
+
+  - name: Start all server services
+    become: true
+    command: chef-server-ctl reconfigure
+
+  - name: Create admin user
+    become: true
+    command: chef-server-ctl user-create vagrant FRANK CASTLE frank@caste.com 'punisher' --filename /pems/punisher.pem
+
+  - name: Create organisation 
+    become: true
+    command: chef-server-ctl org-create punishall 'Punish All, Inc.' --association_user vagrant --filename /pems/punishall.pem
+    notify:
+      - chef-server reconfigure
+  # - name: Restart server
+  #   become: true
+  #   command: chef-server-ctl reconfigure
+
+  - name: Install additional chef packages
+    become: true
+    command: chef-server-ctl install {{ item.name }} ; chef-server-ctl reconfigure;  {{ item.cmd }} reconfigure
+    loop:
+      - { name: 'chef-manage', cmd: 'chef-manage-ctl' }
+      - { name: 'opscode-push-jobs-server', cmd: 'opscode-push-jobs-server-ctl' }
+      - { name: 'opscode-reporting', cmd: 'opscode-reporting-ctl' }
+  
+  handlers:
+  - name: chef-server reconfigure
+    command: chef-server-ctl reconfigure
