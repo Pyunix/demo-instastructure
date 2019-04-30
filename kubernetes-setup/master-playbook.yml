@@ -108,7 +108,7 @@
       mode: 0777
       checksum: 'sha256:c1967c1dfcd6c921694b80ededdb9bd1beb27cb076864e58957b1568bc98925a'
   
-  - name: Extact helm package
+  - name: Extract helm package
     become: false
     unarchive:
       src: /home/vagrant/helm-v2.13.1-linux-amd64.tar.gz
