@@ -100,6 +100,28 @@
     become: false
     command: kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/master/aio/deploy/recommended/kubernetes-dashboard.yaml
 
+  - name: Download helm package
+    become: false
+    get_url:
+      url: https://storage.googleapis.com/kubernetes-helm/helm-v2.13.1-linux-amd64.tar.gz
+      dest: /home/vagrant/
+      mode: 0777
+      checksum: 'sha256:c1967c1dfcd6c921694b80ededdb9bd1beb27cb076864e58957b1568bc98925a'
+  
+  - name: Extact helm package
+    become: false
+    unarchive:
+      src: /home/vagrant/helm-v2.13.1-linux-amd64.tar.gz
+      dest: /home/vagrant/
+  
+  - name: Enable helm binary
+    become: true
+    copy:
+      src: /home/vagrant/linux-amd64/helm
+      dest: /usr/local/bin/helm
+      owner: vagrant
+      mode: a+x
+
   handlers:
     - name: docker status
       service: name=docker state=started
