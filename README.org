@@ -1,0 +1,19 @@
+#+TITLE: DEMO-INFRASTRUCTURE
+
+* GENERAL
+Provision k8s cluster(+nfs and some other stuff if needed). Except NFS,
+everything is provisioned by ansible scripts.
+Base OS Image ubuntu/xenial64
+
+
+** Contains
+- Chef-server(1cpu-2GBram)
+- Jenkins-server(1cpu-1GBram)
+- NFS server(1cpu-1GBram)
+- K8S cluster(2cpu-2GBram|each)
+  - 1 master(with helm)
+  - 2 slaves
+
+** Current setup
+-  Chef and Jenkins are both tested and available but currently commented
+   out(will be moved to seperate Vagrantfile and dir)

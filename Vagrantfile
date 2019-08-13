@@ -31,16 +31,16 @@ Vagrant.configure("2") do |config|
 #        end
 #    end
 
-  #  config.vm.define "nfs-server" do |nfs|
-  #      nfs.vm.box = IMAGE
-  #      nfs.vm.network "private_network", ip: "192.168.50.15"
-  #     nfs.vm.hostname = "nfs-server.vagrant.com"
-  #     nfs.vm.provider PROVIDER do |nfsc|
-  #         nfsc.customize ["modifyvm", :id, "--memory", "1024"]
-  #         nfsc.customize ["modifyvm", :id, "--cpus", "1"]
-  #     end
-   #     nfs.vm.provision "shell", path: "nfs-server/nfs-bootstrap.sh", privileged: true
-   # end
+    config.vm.define "nfs-server" do |nfs|
+        nfs.vm.box = IMAGE
+        nfs.vm.network "private_network", ip: "192.168.50.15"
+       nfs.vm.hostname = "nfs-server.vagrant.com"
+       nfs.vm.provider PROVIDER do |nfsc|
+           nfsc.customize ["modifyvm", :id, "--memory", "1024"]
+           nfsc.customize ["modifyvm", :id, "--cpus", "1"]
+       end
+           nfs.vm.provision "shell", path: "nfs-server/nfs-bootstrap.sh", privileged: true
+    end
 
     config.vm.define "k8s-master" do |master|
         master.vm.box = IMAGE
