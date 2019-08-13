@@ -74,9 +74,20 @@
       ]
       state: present
       update_cache: yes
-  
+
+  - name: Configure node ip
+    lineinfile:
+      path: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf    # /etc/default/kubelet
+      line: Environment="KUBELET_EXTRA_ARGS=--node-ip={{ node_ip }}" #KUBELET_EXTRA_ARGS=--node-ip={{ node_ip }}
+
+  - name: Restart kubelet
+    service:
+      name: kubelet
+      daemon_reload: yes
+      state: restarted
+
   - name: Initialize the Kubernetes cluster using kubeadm
-    command: kubeadm init --apiserver-advertise-address="192.168.50.10" --apiserver-cert-extra-sans="192.168.50.10"  --node-name k8s-master --pod-network-cidr=192.168.0.0/16
+    command: kubeadm init --apiserver-advertise-address="192.168.50.10" --apiserver-cert-extra-sans="192.168.50.10"  --node-name k8s-master --pod-network-cidr=172.16.0.0/16
 
   - name: Setup kubeconfig for vagrant user
     command: "{{ item }}"
@@ -85,10 +96,14 @@
      - cp -i /etc/kubernetes/admin.conf /home/vagrant/.kube/config
      - chown vagrant:vagrant /home/vagrant/.kube/config
 
-  - name: Install flannel pod network
+  - name: Install pod network
+    become: true
+    command: sysctl net.bridge.bridge-nf-call-iptables=1
+
+  - name: Install pod network
     become: false
     command: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
-
+    
   - name: Generate join command
     command: kubeadm token create --print-join-command
     register: join_command
@@ -98,20 +113,20 @@
   
   - name: Install dashboard
     become: false
-    command: kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/master/aio/deploy/recommended/kubernetes-dashboard.yaml
+    command: kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v1.10.1/src/deploy/recommended/kubernetes-dashboard.yaml
 
   - name: Download helm package
     become: false
     get_url:
-      url: https://storage.googleapis.com/kubernetes-helm/helm-v2.13.1-linux-amd64.tar.gz
+      url: https://get.helm.sh/helm-v2.14.3-linux-amd64.tar.gz
       dest: /home/vagrant/
       mode: 0777
-      checksum: 'sha256:c1967c1dfcd6c921694b80ededdb9bd1beb27cb076864e58957b1568bc98925a'
+      checksum: 'sha256:38614a665859c0f01c9c1d84fa9a5027364f936814d1e47839b05327e400bf55'
   
   - name: Extract helm package
     become: false
     unarchive:
-      src: /home/vagrant/helm-v2.13.1-linux-amd64.tar.gz
+      src: /home/vagrant/helm-v2.14.3-linux-amd64.tar.gz
       dest: /home/vagrant/
   
   - name: Enable helm binary
@@ -125,4 +140,3 @@
   handlers:
     - name: docker status
       service: name=docker state=started
-      

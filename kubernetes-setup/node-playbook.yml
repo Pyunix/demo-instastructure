@@ -41,6 +41,11 @@
     user:
       name: vagrant
       group: docker
+
+  - name: Set iptables
+    become: true
+    command: sysctl -w net.bridge.bridge-nf-call-iptables=1
+
   
   - name: Remove swapfile from /etc/fstab
     mount:
@@ -75,6 +80,17 @@
       ]
       state: present
       update_cache: yes
+
+  - name: Configure node ip
+    lineinfile:
+      path: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf #/etc/default/kubelet
+      line: Environment="KUBELET_EXTRA_ARGS=--node-ip={{ node_ip }}"  #KUBELET_EXTRA_ARGS=--node-ip={{ node_ip }}
+
+  - name: Restart kubelet
+    service:
+      name: kubelet
+      daemon_reload: yes
+      state: restarted
 
   - name: Copy the join command to server location
     copy: src=join-command dest=/tmp/join-command.sh mode=0777
